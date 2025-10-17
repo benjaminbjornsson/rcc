@@ -1,4 +1,8 @@
 use clap::Parser;
+use std::io::Error;
+use std::io::ErrorKind;
+use std::path::PathBuf;
+use std::process::Command;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]
@@ -25,9 +29,59 @@ struct Args {
     file_path: String,
 }
 
-fn main() {
-    let args = Args::parse();
+fn main() -> std::io::Result<()> {
+    run(Args::parse())?;
 
-    println!("args: {args:?}");
+    Ok(())
 }
 
+fn with_extension(path: &str, ext: &str) -> String {
+    let mut buf = PathBuf::from(path);
+    buf.set_extension(ext);
+    buf.to_string_lossy().into_owned()
+}
+
+fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
+    let out = Command::new(cmd)
+        .args(args)
+        .output()
+        .unwrap_or_else(|e| panic!("Failed to run {cmd}: {e}"));
+
+    if out.status.success() {
+        return Ok(());
+    }
+
+    let code = out.status.code().unwrap_or(-1);
+    Err(Error::new(
+        ErrorKind::Other,
+        format!(
+            "{cmd} exited with {code}\n{}",
+            String::from_utf8_lossy(&out.stderr)
+        ),
+    ))
+}
+
+fn run(args: Args) -> Result<(), std::io::Error> {
+    let input = args.file_path;
+    let pre = with_extension(&input, "i");
+    run_cmd("gcc", &["-E", "-P", &input, "-o", &pre])?;
+
+    let assembly = with_extension(&input, "s");
+    run_cmd(
+        "gcc",
+        &[
+            "-S",
+            "-O",
+            "-fno-asynchronous-unwind-tables",
+            "-fcf-protection=none",
+            &pre,
+            "-o",
+            &assembly,
+        ],
+    )?;
+
+    let output = with_extension(&input, "");
+    run_cmd("gcc", &[&assembly, "-o", &output])?;
+
+    Ok(())
+}
