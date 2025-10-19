@@ -82,6 +82,10 @@ fn run(args: Args) -> Result<(), std::io::Error> {
 
     std::fs::remove_file(pre)?;
 
+    if args.s {
+        return Ok(())
+    }
+
     let output = with_extension(&input, "");
     run_cmd("gcc", &[&assembly, "-o", &output])?;
 
