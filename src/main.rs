@@ -62,11 +62,11 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
 }
 
 fn run(args: Args) -> Result<(), std::io::Error> {
-    let input = args.file_path;
-    let pre = with_extension(&input, "i");
-    run_cmd("gcc", &["-E", "-P", &input, "-o", &pre])?;
+    let input = &args.file_path;
+    let pre = with_extension(input, "i");
+    run_cmd("gcc", &["-E", "-P", input, "-o", &pre])?;
 
-    let assembly = with_extension(&input, "s");
+    let assembly = with_extension(input, "s");
     run_cmd(
         "gcc",
         &[
@@ -86,7 +86,7 @@ fn run(args: Args) -> Result<(), std::io::Error> {
         return Ok(())
     }
 
-    let output = with_extension(&input, "");
+    let output = with_extension(input, "");
     run_cmd("gcc", &[&assembly, "-o", &output])?;
 
     std::fs::remove_file(assembly)?;
