@@ -83,7 +83,7 @@ fn run(args: Args) -> Result<(), std::io::Error> {
     std::fs::remove_file(pre)?;
 
     if args.s {
-        return Ok(())
+        return Ok(());
     }
 
     let output = with_extension(input, "");
