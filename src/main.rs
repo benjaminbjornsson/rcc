@@ -29,10 +29,8 @@ struct Args {
     file_path: String,
 }
 
-fn main() -> std::io::Result<()> {
-    run(Args::parse())?;
-
-    Ok(())
+fn main() -> Result<(), CompilerError> {
+    run(Args::parse())
 }
 
 fn with_extension(path: &str, ext: &str) -> String {
