@@ -3,6 +3,8 @@ use std::io::Error;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 use std::process::Command;
+mod lexer;
+use lexer::Lexer;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]
@@ -59,26 +61,50 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
     ))
 }
 
-fn run(args: Args) -> Result<(), std::io::Error> {
+#[derive(Debug)]
+enum CompilerError {
+    Io(std::io::Error),
+    Lexer,
+}
+
+impl From<std::io::Error> for CompilerError {
+    fn from(e: std::io::Error) -> Self {
+        CompilerError::Io(e)
+    }
+}
+
+impl From<lexer::error::LexerError> for CompilerError {
+    fn from(_: lexer::error::LexerError) -> Self {
+        CompilerError::Lexer
+    }
+}
+
+fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerError> {
+    let pre_str: String = std::fs::read_to_string(&pre)?;
+    std::fs::remove_file(pre)?;
+
+    let lexer = Lexer::new(&pre_str);
+    if args.lex {
+        for token in lexer {
+            token?;
+        }
+        return Ok(());
+    }
+
+    Ok(())
+}
+
+fn run(args: Args) -> Result<(), CompilerError> {
     let input = &args.file_path;
     let pre = with_extension(input, "i");
     run_cmd("gcc", &["-E", "-P", input, "-o", &pre])?;
 
     let assembly = with_extension(input, "s");
-    run_cmd(
-        "gcc",
-        &[
-            "-S",
-            "-O",
-            "-fno-asynchronous-unwind-tables",
-            "-fcf-protection=none",
-            &pre,
-            "-o",
-            &assembly,
-        ],
-    )?;
+    run_compiler(&args, &pre, &assembly)?;
 
-    std::fs::remove_file(pre)?;
+    if args.lex || args.parse || args.codegen {
+        return Ok(());
+    }
 
     if args.s {
         return Ok(());
