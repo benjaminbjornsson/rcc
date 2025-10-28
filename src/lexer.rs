@@ -168,6 +168,13 @@ mod tests {
     }
 
     #[test]
+    fn invalid_identifier() {
+        let lexer = Lexer::new("123bar");
+        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>();
+        assert!(tokens.is_err());
+    }
+
+    #[test]
     fn constant() -> Result<(), LexerError> {
         let lexer = Lexer::new("42");
         let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
