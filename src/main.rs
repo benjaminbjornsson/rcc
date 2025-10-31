@@ -73,8 +73,8 @@ impl From<std::io::Error> for CompilerError {
     }
 }
 
-impl From<lexer::error::LexerError> for CompilerError {
-    fn from(_: lexer::error::LexerError) -> Self {
+impl From<lexer::LexerError> for CompilerError {
+    fn from(_: lexer::LexerError) -> Self {
         CompilerError::Lexer
     }
 }

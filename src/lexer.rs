@@ -19,15 +19,12 @@ pub mod token {
     }
 }
 
-pub mod error {
-    #[derive(Debug)]
-    pub enum LexerError {
-        InvalidCharacter,
-        InvalidNumber,
-    }
+#[derive(Debug)]
+pub enum LexerError {
+    InvalidCharacter,
+    InvalidNumber,
 }
 
-use error::LexerError;
 use token::Keyword;
 use token::Token;
 
