@@ -6,9 +6,14 @@ pub enum Keyword {
 }
 
 #[derive(Debug)]
+pub enum Const {
+    Int(i64),
+}
+
+#[derive(Debug)]
 pub enum Token<'a> {
     Identifier(&'a str),
-    Constant(&'a str),
+    Constant(Const),
     Keyword(Keyword),
     OpenParenthesis,
     CloseParenthesis,
@@ -21,6 +26,7 @@ pub enum Token<'a> {
 pub enum LexerError {
     InvalidCharacter,
     InvalidConstSuffix,
+    InvalidIntegerLiteral(std::num::ParseIntError),
 }
 
 pub struct Lexer<'a> {
@@ -28,6 +34,12 @@ pub struct Lexer<'a> {
     iter: std::str::CharIndices<'a>,
     peeked: Option<(usize, char)>,
     pos: usize,
+}
+
+impl From<std::num::ParseIntError> for LexerError {
+    fn from(value: std::num::ParseIntError) -> Self {
+        LexerError::InvalidIntegerLiteral(value)
+    }
 }
 
 impl<'a> Lexer<'a> {
@@ -107,7 +119,8 @@ impl<'a> Lexer<'a> {
             }
         }
 
-        Ok(Token::Constant(&self.src[start..self.pos]))
+        let n: i64 = self.src[start..self.pos].parse()?;
+        Ok(Token::Constant(Const::Int(n)))
     }
 }
 
@@ -170,7 +183,7 @@ mod tests {
     fn constant() -> Result<(), LexerError> {
         let lexer = Lexer::new("42");
         let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::Constant("42")]));
+        assert!(matches!(tokens.as_slice(), [Token::Constant(Const::Int(42))]));
         Ok(())
     }
 
@@ -231,7 +244,7 @@ mod tests {
                 Token::CloseParenthesis,
                 Token::OpenBrace,
                 Token::Keyword(Keyword::Return),
-                Token::Constant("2"),
+                Token::Constant(Const::Int(2)),
                 Token::Semicolon,
                 Token::CloseBrace,
             ]
