@@ -20,7 +20,7 @@ pub enum Token<'a> {
 #[derive(Debug)]
 pub enum LexerError {
     InvalidCharacter,
-    InvalidNumber,
+    InvalidConstSuffix,
 }
 
 pub struct Lexer<'a> {
@@ -103,7 +103,7 @@ impl<'a> Lexer<'a> {
 
         if let Some((_, ch)) = self.peek_char() {
             if ch.is_alphabetic() || ch == '_' {
-                return Err(LexerError::InvalidNumber);
+                return Err(LexerError::InvalidConstSuffix);
             }
         }
 
