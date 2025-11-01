@@ -1,22 +1,20 @@
-pub mod token {
-    #[derive(Debug)]
-    pub enum Keyword {
-        Int,
-        Void,
-        Return,
-    }
+#[derive(Debug)]
+pub enum Keyword {
+    Int,
+    Void,
+    Return,
+}
 
-    #[derive(Debug)]
-    pub enum Token<'a> {
-        Identifier(&'a str),
-        Constant(&'a str),
-        Keyword(Keyword),
-        OpenParenthesis,
-        CloseParenthesis,
-        OpenBrace,
-        CloseBrace,
-        Semicolon,
-    }
+#[derive(Debug)]
+pub enum Token<'a> {
+    Identifier(&'a str),
+    Constant(&'a str),
+    Keyword(Keyword),
+    OpenParenthesis,
+    CloseParenthesis,
+    OpenBrace,
+    CloseBrace,
+    Semicolon,
 }
 
 #[derive(Debug)]
@@ -24,9 +22,6 @@ pub enum LexerError {
     InvalidCharacter,
     InvalidNumber,
 }
-
-use token::Keyword;
-use token::Token;
 
 pub struct Lexer<'a> {
     src: &'a str,
