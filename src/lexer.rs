@@ -11,8 +11,8 @@ pub enum Const {
 }
 
 #[derive(Debug)]
-pub enum Token<'a> {
-    Identifier(&'a str),
+pub enum Token {
+    Identifier(String),
     Constant(Const),
     Keyword(Keyword),
     OpenParenthesis,
@@ -80,7 +80,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn identifier(&mut self) -> Token<'a> {
+    fn identifier(&mut self) -> Token {
         let start = self.pos;
         self.consume_char();
         while let Some((_, ch)) = self.peek_char() {
@@ -97,11 +97,11 @@ impl<'a> Lexer<'a> {
             "int" => Token::Keyword(Keyword::Int),
             "void" => Token::Keyword(Keyword::Void),
             "return" => Token::Keyword(Keyword::Return),
-            _ => Token::Identifier(identifier),
+            _ => Token::Identifier(identifier.to_string()),
         }
     }
 
-    fn constant(&mut self) -> Result<Token<'a>, LexerError> {
+    fn constant(&mut self) -> Result<Token, LexerError> {
         let start = self.pos;
         self.consume_char();
         loop {
@@ -125,7 +125,7 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, LexerError>;
+    type Item = Result<Token, LexerError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.skip_ws();
@@ -167,8 +167,7 @@ mod tests {
     fn identifier() -> Result<(), LexerError> {
         let lexer = Lexer::new("foo");
         let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        println!("{tokens:?}");
-        assert!(matches!(tokens.as_slice(), [Token::Identifier("foo")]));
+        assert!(matches!(tokens.as_slice(), [Token::Identifier(s)] if s == "foo"));
         Ok(())
     }
 
@@ -182,8 +181,11 @@ mod tests {
     #[test]
     fn constant() -> Result<(), LexerError> {
         let lexer = Lexer::new("42");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::Constant(Const::Int(42))]));
+        let tokens: Vec<Token> = lexer.collect::<Result<Vec<_>, LexerError>>()?;
+        assert!(matches!(
+            tokens.as_slice(),
+            [Token::Constant(Const::Int(42))]
+        ));
         Ok(())
     }
 
@@ -238,7 +240,7 @@ mod tests {
             tokens.as_slice(),
             [
                 Token::Keyword(Keyword::Int),
-                Token::Identifier("main"),
+                Token::Identifier(identifier),
                 Token::OpenParenthesis,
                 Token::Keyword(Keyword::Void),
                 Token::CloseParenthesis,
@@ -247,7 +249,7 @@ mod tests {
                 Token::Constant(Const::Int(2)),
                 Token::Semicolon,
                 Token::CloseBrace,
-            ]
+            ] if identifier == "main"
         ));
         Ok(())
     }
