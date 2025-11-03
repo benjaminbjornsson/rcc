@@ -1,4 +1,6 @@
 pub mod exp;
+pub mod statement;
+
 use crate::lexer::{Lexer, LexerError};
 use crate::token::Token;
 
