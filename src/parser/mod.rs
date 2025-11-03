@@ -5,10 +5,12 @@ pub mod statement;
 
 use crate::lexer::{Lexer, LexerError};
 use crate::token::Token;
+use crate::parser::program::Program;
 
 pub enum ParseError {
     UnexpectedEof,
     UnexpectedToken(Token),
+    UnexpectedTrailing(Token),
     Lexer(LexerError),
 }
 
@@ -27,11 +29,26 @@ impl<'a> Parser<'a> {
         Self { lexer }
     }
 
+    pub fn parse(&mut self) -> Result<Program, ParseError> {
+        let program = Program::parse(self)?;
+
+        self.expect_eof()?;
+
+        Ok(program)
+    }
+
     fn expect(&mut self, expected: Token) -> Result<(), ParseError> {
         match self.lexer.next().transpose()? {
             Some(t) if t == expected => Ok(()),
             Some(t) => Err(ParseError::UnexpectedToken(t)),
             None => return Err(ParseError::UnexpectedEof),
+        }
+    }
+
+    fn expect_eof(&mut self) -> Result<(), ParseError> {
+        match self.lexer.next().transpose()? {
+            None => Ok(()),
+            Some(t) => Err(ParseError::UnexpectedTrailing(t)),
         }
     }
 
