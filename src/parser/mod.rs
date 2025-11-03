@@ -1,3 +1,4 @@
+pub mod exp;
 use crate::lexer::{Lexer, LexerError};
 use crate::token::Token;
 
@@ -28,6 +29,10 @@ impl<'a> Parser<'a> {
             Some(t) => Err(ParseError::UnexpectedToken(t)),
             None => return Err(ParseError::UnexpectedEof),
         }
+    }
+
+    fn next(&mut self) -> Option<Result<Token, LexerError>> {
+        self.lexer.next()
     }
 }
 
