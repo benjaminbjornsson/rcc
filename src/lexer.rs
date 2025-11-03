@@ -1,26 +1,4 @@
-#[derive(Debug)]
-pub enum Keyword {
-    Int,
-    Void,
-    Return,
-}
-
-#[derive(Debug)]
-pub enum Const {
-    Int(i64),
-}
-
-#[derive(Debug)]
-pub enum Token {
-    Identifier(String),
-    Constant(Const),
-    Keyword(Keyword),
-    OpenParenthesis,
-    CloseParenthesis,
-    OpenBrace,
-    CloseBrace,
-    Semicolon,
-}
+use crate::token::{Const, Keyword, Token};
 
 #[derive(Debug)]
 pub enum LexerError {

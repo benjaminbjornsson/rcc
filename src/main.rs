@@ -3,6 +3,7 @@ use std::io::Error;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 use std::process::Command;
+mod token;
 mod lexer;
 use lexer::Lexer;
 
