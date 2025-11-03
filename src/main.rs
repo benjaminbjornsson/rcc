@@ -6,6 +6,7 @@ use std::process::Command;
 mod token;
 mod lexer;
 use lexer::Lexer;
+mod parser;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]
