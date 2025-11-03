@@ -67,6 +67,7 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
 enum CompilerError {
     Io(std::io::Error),
     Lexer,
+    Parser,
 }
 
 impl From<std::io::Error> for CompilerError {
@@ -81,6 +82,12 @@ impl From<lexer::LexerError> for CompilerError {
     }
 }
 
+impl From<parser::ParseError> for CompilerError {
+    fn from(_: parser::ParseError) -> Self {
+        CompilerError::Parser
+    }
+}
+
 fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerError> {
     let pre_str: String = std::fs::read_to_string(&pre)?;
     std::fs::remove_file(pre)?;
@@ -90,6 +97,13 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
         for token in lexer {
             token?;
         }
+        return Ok(());
+    }
+
+    let mut parser = parser::Parser::new(lexer);
+    parser.parse()?;
+
+    if args.parse {
         return Ok(());
     }
 
