@@ -1,4 +1,5 @@
 pub mod exp;
+pub mod function;
 pub mod statement;
 
 use crate::lexer::{Lexer, LexerError};
