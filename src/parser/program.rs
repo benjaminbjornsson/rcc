@@ -20,7 +20,6 @@ mod tests {
     use crate::token::{Token, TokenKind};
     use crate::parser::exp::Exp;
     use crate::parser::statement::Statement;
-    use crate::span::Span;
 
     #[test]
     fn return_int() {
