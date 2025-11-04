@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::span::Span;
+use crate::span::{HasSpan, Span};
 use crate::token::Token;
 
 #[derive(Debug)]
@@ -13,6 +13,12 @@ pub enum LexerErrorKind {
 pub struct LexerError {
     pub kind: LexerErrorKind,
     pub span: Span,
+}
+
+impl HasSpan for LexerError {
+    fn span<'a>(&'a self) -> &'a Span {
+        &self.span
+    }
 }
 
 impl fmt::Display for LexerError {
@@ -53,9 +59,9 @@ impl From<std::io::Error> for CompilerError {
     }
 }
 
-pub fn render_diagnostic(src: &str, span: &Span, msg: &str) {
-    let start = span.start.min(src.len());
-    let end = span.end.min(src.len());
+pub fn render_diagnostic(src: &str, error: &(impl HasSpan + std::fmt::Display)) {
+    let start = error.span().start.min(src.len());
+    let end = error.span().end.min(src.len());
 
     let line_start = src[..start].rfind('\n').map(|i| i + 1).unwrap_or(0);
     let line_end = src[end..]
@@ -92,7 +98,7 @@ pub fn render_diagnostic(src: &str, span: &Span, msg: &str) {
         "{}{} {}",
         " ".repeat(underline_pad),
         "^".repeat(underline_len),
-        &msg
+        &error.to_string()
     );
 
     eprint!("{}", out);
