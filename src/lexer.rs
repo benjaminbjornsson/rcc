@@ -19,6 +19,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    pub fn pos(&self) -> usize {
+        self.pos
+    }
+
     fn peek_char(&mut self) -> Option<(usize, char)> {
         if self.peeked.is_none() {
             self.peeked = self.iter.next();

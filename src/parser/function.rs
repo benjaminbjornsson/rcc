@@ -13,7 +13,7 @@ impl Function {
         let token = parser.next()?;
         let identifier = match token.kind {
             TokenKind::Identifier(i) => i,
-            _ => return Err(ParseError::UnexpectedToken(token)),
+            _ => return Err(ParseError::UnexpectedToken(token, TokenKind::Identifier(String::from("")))),
         };
 
         parser.expect(TokenKind::OpenParenthesis)?;

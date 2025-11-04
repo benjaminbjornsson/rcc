@@ -1,6 +1,6 @@
 use std::fmt;
 use crate::span::{HasSpan, Span};
-use crate::token::Token;
+use crate::token::{Token, TokenKind};
 
 #[derive(Debug)]
 pub enum LexerErrorKind {
@@ -34,10 +34,32 @@ impl fmt::Display for LexerError {
 }
 
 pub enum ParseError {
-    UnexpectedEof,
-    UnexpectedToken(Token),
+    UnexpectedEof(Span),
+    UnexpectedToken(Token, TokenKind),
     UnexpectedTrailing(Token),
     Lexer(LexerError),
+}
+
+impl HasSpan for ParseError {
+    fn span<'a>(&'a self) -> &'a Span {
+        match self {
+            Self::UnexpectedEof(span) => span,
+            Self::UnexpectedToken(token, _) => &token.span,
+            Self::UnexpectedTrailing(token) => &token.span,
+            Self::Lexer(e) => e.span(),
+        }
+    }
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self {
+            ParseError::UnexpectedEof(_) => write!(f, "unexpected end of file"),
+            ParseError::UnexpectedToken(token, expected) => write!(f, "expected '{:?}' but found {:?}", expected, token.kind),
+            ParseError::UnexpectedTrailing(token) => write!(f, "unexpected trailing '{:?}'", token),
+            ParseError::Lexer(error) => write!(f, "{}", error.to_string()),
+        }
+    }
 }
 
 impl From<LexerError> for ParseError {

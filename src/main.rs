@@ -9,7 +9,7 @@ use lexer::Lexer;
 mod parser;
 pub mod span;
 pub mod error;
-use error::{CompilerError, ParseError};
+use error::CompilerError;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]
@@ -86,9 +86,7 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
         let mut parser = parser::Parser::new(lexer);
 
         if let Err(error) = parser.parse() {
-            if let ParseError::Lexer (error) = error {
-                error::render_diagnostic(&pre_str, &error);
-            }
+            error::render_diagnostic(&pre_str, &error);
             return Err(CompilerError::Parser)
         }
 

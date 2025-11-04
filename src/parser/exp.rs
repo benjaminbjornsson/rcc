@@ -11,7 +11,7 @@ impl Exp {
 
         match token.kind {
             TokenKind::Constant(Const::Int(num)) => Ok(Self::ConstantInt(num)),
-            _ => Err(ParseError::UnexpectedToken(token)),
+            _ => Err(ParseError::UnexpectedToken(token, TokenKind::Constant(Const::Int(0)))),
         }
     }
 }

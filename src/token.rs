@@ -22,6 +22,7 @@ pub enum TokenKind {
     OpenBrace,
     CloseBrace,
     Semicolon,
+    Eof,
 }
 
 #[derive(Debug, PartialEq)]

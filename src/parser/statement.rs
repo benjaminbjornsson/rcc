@@ -20,6 +20,7 @@ impl Statement {
 mod tests {
     use crate::lexer::Lexer;
     use crate::token::{Const, Token, TokenKind};
+    use crate::span::Span;
 
     use super::*;
 
@@ -43,7 +44,8 @@ mod tests {
                 Token {
                     kind,
                     span: _
-                }
+                },
+                TokenKind::Semicolon
             ))
             if kind == TokenKind::Constant(Const::Int(2))));
     }
@@ -54,7 +56,8 @@ mod tests {
         let mut parser = Parser::new(lexer);
         assert!(matches!(
             Statement::parse(&mut parser),
-            Err(ParseError::UnexpectedEof)
+            Err(ParseError::UnexpectedEof(Span { start, end }))
+            if start == 8 && end == 9
         ));
     }
 }

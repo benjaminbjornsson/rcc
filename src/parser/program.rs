@@ -46,7 +46,7 @@ mod tests {
         let mut parser = Parser::new(lexer);
         assert!(matches!(
             Program::parse(&mut parser),
-            Err(ParseError::UnexpectedToken(Token { kind, span: _ }))
+            Err(ParseError::UnexpectedToken(Token { kind, span: _ }, TokenKind::Semicolon ))
             if kind == TokenKind::CloseBrace
         ));
     }
