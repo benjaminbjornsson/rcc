@@ -25,6 +25,14 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+    pub fn render_diagnostic(&self, err: &ParseError) {
+        if let ParseError::Lexer(err) = err {
+            self.lexer.render_diagnostic(&err);
+        }
+    }
+}
+
+impl<'a> Parser<'a> {
     pub fn new(lexer: Lexer<'a>) -> Self {
         Self { lexer }
     }
@@ -55,7 +63,7 @@ impl<'a> Parser<'a> {
         match self.lexer.next() {
             None => Err(ParseError::UnexpectedEof),
             Some(Ok(t)) => Ok(t),
-            Some(Err(e)) => Err(ParseError::Lexer(self.lexer.render_diagnostic(e))),
+            Some(Err(e)) => Err(ParseError::Lexer(e)),
         }
     }
 }

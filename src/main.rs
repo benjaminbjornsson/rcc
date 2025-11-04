@@ -93,21 +93,26 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
     let pre_str: String = std::fs::read_to_string(&pre)?;
     std::fs::remove_file(pre)?;
 
-    let lexer = Lexer::new(&pre_str);
     if args.lex {
-        let mut lexer = lexer;
+        let mut lexer = Lexer::new(&pre_str);
         if let Some(error) = lexer.find_map(|res| res.err()) {
-            lexer.render_diagnostic(error);
+            lexer.render_diagnostic(&error);
             return Err(CompilerError::Lexer);
         }
 
         return Ok(());
     }
 
-    let mut parser = parser::Parser::new(lexer);
-    parser.parse()?;
 
     if args.parse {
+        let lexer = Lexer::new(&pre_str);
+        let mut parser = parser::Parser::new(lexer);
+
+        if let Err(error) = parser.parse() {
+            parser.render_diagnostic(&error);
+            return Err(CompilerError::Parser)
+        }
+
         return Ok(());
     }
 

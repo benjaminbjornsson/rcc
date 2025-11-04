@@ -36,7 +36,7 @@ pub struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    pub fn render_diagnostic(&self, error: LexerError) -> LexerError {
+    pub fn render_diagnostic(&self, error: &LexerError) {
         let start = error.span.start.min(self.src.len());
         let end = error.span.end.min(self.src.len());
 
@@ -79,8 +79,6 @@ impl<'a> Lexer<'a> {
         );
 
         eprint!("{}", out);
-
-        error
     }
 }
 
