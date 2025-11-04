@@ -94,9 +94,12 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
 
     let lexer = Lexer::new(&pre_str);
     if args.lex {
-        for token in lexer {
-            token?;
+        let mut lexer = lexer;
+        if let Some(error) = lexer.find_map(|res| res.err()) {
+            lexer.render_diagnostic(error);
+            return Err(CompilerError::Lexer);
         }
+
         return Ok(());
     }
 
