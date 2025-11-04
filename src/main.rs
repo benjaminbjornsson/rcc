@@ -7,6 +7,7 @@ mod token;
 mod lexer;
 use lexer::Lexer;
 mod parser;
+pub mod span;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]

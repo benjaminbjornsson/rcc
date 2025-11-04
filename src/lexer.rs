@@ -1,25 +1,7 @@
 use std::fmt;
 
 use crate::token::{Const, Keyword, Token};
-
-#[derive(Debug)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-}
-
-impl Span {
-    pub fn new(start: usize, end: usize) -> Self {
-        Self { start, end }
-    }
-
-    pub fn single(pos: usize) -> Self {
-        Self {
-            start: pos,
-            end: pos + 1,
-        }
-    }
-}
+use crate::span::Span;
 
 #[derive(Debug)]
 pub enum LexerErrorKind {
