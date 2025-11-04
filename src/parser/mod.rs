@@ -3,33 +3,13 @@ pub mod function;
 pub mod program;
 pub mod statement;
 
-use crate::lexer::{Lexer, LexerError};
+use crate::lexer::Lexer;
 use crate::token::{Token, TokenKind};
 use crate::parser::program::Program;
-
-pub enum ParseError {
-    UnexpectedEof,
-    UnexpectedToken(Token),
-    UnexpectedTrailing(Token),
-    Lexer(LexerError),
-}
-
-impl From<LexerError> for ParseError {
-    fn from(e: LexerError) -> Self {
-        ParseError::Lexer(e)
-    }
-}
+use crate::error::ParseError;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
-}
-
-impl<'a> Parser<'a> {
-    pub fn render_diagnostic(&self, err: &ParseError) {
-        if let ParseError::Lexer(err) = err {
-            self.lexer.render_diagnostic(&err);
-        }
-    }
 }
 
 impl<'a> Parser<'a> {

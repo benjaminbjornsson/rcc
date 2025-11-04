@@ -1,85 +1,12 @@
-use std::fmt;
-
 use crate::token::{Const, Keyword, Token, TokenKind};
 use crate::span::Span;
-
-#[derive(Debug)]
-pub enum LexerErrorKind {
-    UnexpectedCharacter(char),
-    InvalidConstSuffix,
-    InvalidIntegerLiteral,
-}
-
-#[derive(Debug)]
-pub struct LexerError {
-    kind: LexerErrorKind,
-    span: Span,
-}
-
-impl fmt::Display for LexerError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.kind {
-            LexerErrorKind::UnexpectedCharacter(found) => write!(f, "unexpected token '{found}'"),
-            LexerErrorKind::InvalidConstSuffix => write!(f, "invalid const suffic"),
-            LexerErrorKind::InvalidIntegerLiteral => {
-                write!(f, "unable to convert integer literal value to int")
-            }
-        }
-    }
-}
+use crate::error::{LexerError, LexerErrorKind};
 
 pub struct Lexer<'a> {
     src: &'a str,
     iter: std::str::CharIndices<'a>,
     peeked: Option<(usize, char)>,
     pos: usize,
-}
-
-impl<'a> Lexer<'a> {
-    pub fn render_diagnostic(&self, error: &LexerError) {
-        let start = error.span.start.min(self.src.len());
-        let end = error.span.end.min(self.src.len());
-
-        let line_start = self.src[..start].rfind('\n').map(|i| i + 1).unwrap_or(0);
-        let line_end = self.src[end..]
-            .find('\n')
-            .map(|i| end + i)
-            .unwrap_or(self.src.len());
-
-        let line_text = &self.src[line_start..line_end];
-
-        let line_no = 1 + self.src[..line_start]
-            .chars()
-            .filter(|&c| c == '\n')
-            .count();
-
-        let col_start = self.src[line_start..start].chars().count().max(1);
-
-        let expand_tabs = |s: &str| s.replace('\t', "    ");
-        let expanded_line = expand_tabs(line_text);
-
-        let prefix_expanded = expand_tabs(&self.src[line_start..start]);
-        let underline_pad = prefix_expanded.chars().count();
-        let underline_len = {
-            let sel = expand_tabs(&self.src[start..end]);
-            sel.chars().count().max(1)
-        };
-
-        let mut out = String::new();
-        use std::fmt::Write;
-
-        let _ = writeln!(out, "line {}, col {}", line_no, col_start);
-        let _ = writeln!(out, "{}", expanded_line);
-        let _ = writeln!(
-            out,
-            "{}{} {}",
-            " ".repeat(underline_pad),
-            "^".repeat(underline_len),
-            &error.to_string()
-        );
-
-        eprint!("{}", out);
-    }
 }
 
 impl<'a> Lexer<'a> {

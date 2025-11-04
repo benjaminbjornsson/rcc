@@ -8,6 +8,8 @@ mod lexer;
 use lexer::Lexer;
 mod parser;
 pub mod span;
+pub mod error;
+use error::{CompilerError, ParseError};
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]
@@ -64,39 +66,14 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
     ))
 }
 
-#[derive(Debug)]
-enum CompilerError {
-    Io(std::io::Error),
-    Lexer,
-    Parser,
-}
-
-impl From<std::io::Error> for CompilerError {
-    fn from(e: std::io::Error) -> Self {
-        CompilerError::Io(e)
-    }
-}
-
-impl From<lexer::LexerError> for CompilerError {
-    fn from(_: lexer::LexerError) -> Self {
-        CompilerError::Lexer
-    }
-}
-
-impl From<parser::ParseError> for CompilerError {
-    fn from(_: parser::ParseError) -> Self {
-        CompilerError::Parser
-    }
-}
-
-fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerError> {
+fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerError> {
     let pre_str: String = std::fs::read_to_string(&pre)?;
     std::fs::remove_file(pre)?;
 
     if args.lex {
         let mut lexer = Lexer::new(&pre_str);
         if let Some(error) = lexer.find_map(|res| res.err()) {
-            lexer.render_diagnostic(&error);
+            error::render_diagnostic(&pre_str, &error);
             return Err(CompilerError::Lexer);
         }
 
@@ -109,7 +86,9 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
         let mut parser = parser::Parser::new(lexer);
 
         if let Err(error) = parser.parse() {
-            parser.render_diagnostic(&error);
+            if let ParseError::Lexer (error) = error {
+                error::render_diagnostic(&pre_str, &error);
+            }
             return Err(CompilerError::Parser)
         }
 
