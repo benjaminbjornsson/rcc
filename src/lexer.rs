@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::token::{Const, Keyword, Token};
+use crate::token::{Const, Keyword, Token, TokenKind};
 use crate::span::Span;
 
 #[derive(Debug)]
@@ -134,12 +134,27 @@ impl<'a> Lexer<'a> {
         }
 
         let identifier = &self.src[start..self.pos];
-
+        let span = Span {
+            start,
+            end: self.pos,
+        };
         match identifier {
-            "int" => Token::Keyword(Keyword::Int),
-            "void" => Token::Keyword(Keyword::Void),
-            "return" => Token::Keyword(Keyword::Return),
-            _ => Token::Identifier(identifier.to_string()),
+            "int" => Token {
+                kind: TokenKind::Keyword(Keyword::Int),
+                span,
+            },
+            "void" => Token {
+                kind: TokenKind::Keyword(Keyword::Void),
+                span,
+            },
+            "return" => Token {
+                kind: TokenKind::Keyword(Keyword::Return),
+                span,
+            },
+            _ => Token {
+                kind: TokenKind::Identifier(identifier.to_string()),
+                span,
+            },
         }
     }
 
@@ -164,13 +179,20 @@ impl<'a> Lexer<'a> {
             }
         }
 
+        let span = Span {
+            start,
+            end: self.pos,
+        };
         match self.src[start..self.pos].parse::<i64>() {
-            Ok(n) => Ok(Token::Constant(Const::Int(n))),
+            Ok(n) => Ok(Token {
+                kind: TokenKind::Constant(Const::Int(n)),
+                span,
+            }),
             Err(_) => {
                 return Err(LexerError {
                     kind: LexerErrorKind::InvalidIntegerLiteral,
                     span: Span::new(start, self.pos),
-                })
+                });
             }
         }
     }
@@ -185,29 +207,59 @@ impl<'a> Iterator for Lexer<'a> {
         match self.peek_char() {
             Some((_, ch)) if ch == '_' || ch.is_ascii_alphabetic() => Some(Ok(self.identifier())),
             Some((_, ch)) if ch.is_ascii_digit() => Some(self.constant()),
-            Some((_, '(')) => {
+            Some((i, '(')) => {
                 self.consume_char();
-                Some(Ok(Token::OpenParenthesis))
+                Some(Ok(Token {
+                    kind: TokenKind::OpenParenthesis,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
             }
-            Some((_, ')')) => {
+            Some((i, ')')) => {
                 self.consume_char();
-                Some(Ok(Token::CloseParenthesis))
+                Some(Ok(Token {
+                    kind: TokenKind::CloseParenthesis,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
             }
-            Some((_, '{')) => {
+            Some((i, '{')) => {
                 self.consume_char();
-                Some(Ok(Token::OpenBrace))
+                Some(Ok(Token {
+                    kind: TokenKind::OpenBrace,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
             }
-            Some((_, '}')) => {
+            Some((i, '}')) => {
                 self.consume_char();
-                Some(Ok(Token::CloseBrace))
+                Some(Ok(Token {
+                    kind: TokenKind::CloseBrace,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
             }
-            Some((_, ';')) => {
+            Some((i, ';')) => {
                 self.consume_char();
-                Some(Ok(Token::Semicolon))
+                Some(Ok(Token {
+                    kind: TokenKind::Semicolon,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
             }
-            Some((_, c)) => Some(Err(LexerError {
+            Some((i, c)) => Some(Err(LexerError {
                 kind: LexerErrorKind::UnexpectedCharacter(c),
-                span: Span::single(self.pos),
+                span: Span::single(i),
             })),
             None => None,
         }
@@ -221,25 +273,31 @@ mod tests {
     #[test]
     fn identifier() -> Result<(), LexerError> {
         let lexer = Lexer::new("foo");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::Identifier(s)] if s == "foo"));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::Identifier(s)] if s == "foo"));
         Ok(())
     }
 
     #[test]
     fn invalid_identifier() {
         let lexer = Lexer::new("123bar");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>();
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>();
         assert!(tokens.is_err());
     }
 
     #[test]
     fn constant() -> Result<(), LexerError> {
         let lexer = Lexer::new("42");
-        let tokens: Vec<Token> = lexer.collect::<Result<Vec<_>, LexerError>>()?;
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
         assert!(matches!(
             tokens.as_slice(),
-            [Token::Constant(Const::Int(42))]
+            [TokenKind::Constant(Const::Int(42))]
         ));
         Ok(())
     }
@@ -247,40 +305,50 @@ mod tests {
     #[test]
     fn open_parenthesis() -> Result<(), LexerError> {
         let lexer = Lexer::new("(");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::OpenParenthesis]));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::OpenParenthesis]));
         Ok(())
     }
 
     #[test]
     fn close_parenthesis() -> Result<(), LexerError> {
         let lexer = Lexer::new(")");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::CloseParenthesis]));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::CloseParenthesis]));
         Ok(())
     }
 
     #[test]
     fn open_brace() -> Result<(), LexerError> {
         let lexer = Lexer::new("{");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::OpenBrace]));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::OpenBrace]));
         Ok(())
     }
 
     #[test]
     fn close_brace() -> Result<(), LexerError> {
         let lexer = Lexer::new("}");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::CloseBrace]));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::CloseBrace]));
         Ok(())
     }
 
     #[test]
     fn semicolon() -> Result<(), LexerError> {
         let lexer = Lexer::new(";");
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
-        assert!(matches!(tokens.as_slice(), [Token::Semicolon]));
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
+        assert!(matches!(tokens.as_slice(), [TokenKind::Semicolon]));
         Ok(())
     }
 
@@ -290,20 +358,22 @@ mod tests {
             return 2;
         }";
         let lexer = Lexer::new(file);
-        let tokens = lexer.collect::<Result<Vec<_>, LexerError>>()?;
+        let tokens = lexer
+            .map(|res| res.map(|t| t.kind))
+            .collect::<Result<Vec<_>, _>>()?;
         assert!(matches!(
             tokens.as_slice(),
             [
-                Token::Keyword(Keyword::Int),
-                Token::Identifier(identifier),
-                Token::OpenParenthesis,
-                Token::Keyword(Keyword::Void),
-                Token::CloseParenthesis,
-                Token::OpenBrace,
-                Token::Keyword(Keyword::Return),
-                Token::Constant(Const::Int(2)),
-                Token::Semicolon,
-                Token::CloseBrace,
+                TokenKind::Keyword(Keyword::Int),
+                TokenKind::Identifier(identifier),
+                TokenKind::OpenParenthesis,
+                TokenKind::Keyword(Keyword::Void),
+                TokenKind::CloseParenthesis,
+                TokenKind::OpenBrace,
+                TokenKind::Keyword(Keyword::Return),
+                TokenKind::Constant(Const::Int(2)),
+                TokenKind::Semicolon,
+                TokenKind::CloseBrace,
             ] if identifier == "main"
         ));
         Ok(())

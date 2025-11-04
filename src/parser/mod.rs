@@ -4,7 +4,7 @@ pub mod program;
 pub mod statement;
 
 use crate::lexer::{Lexer, LexerError};
-use crate::token::Token;
+use crate::token::{Token, TokenKind};
 use crate::parser::program::Program;
 
 pub enum ParseError {
@@ -37,9 +37,9 @@ impl<'a> Parser<'a> {
         Ok(program)
     }
 
-    fn expect(&mut self, expected: Token) -> Result<(), ParseError> {
+    fn expect(&mut self, expected: TokenKind) -> Result<(), ParseError> {
         match self.next()? {
-            token if token == expected => Ok(()),
+            token if token.kind == expected => Ok(()),
             token => Err(ParseError::UnexpectedToken(token)),
         }
     }
@@ -68,6 +68,6 @@ mod tests {
     fn expect_semicolon() {
         let lexer = Lexer::new(";");
         let mut parser = Parser::new(lexer);
-        assert!(matches!(parser.expect(Token::Semicolon), Ok(())));
+        assert!(matches!(parser.expect(TokenKind::Semicolon), Ok(())));
     }
 }

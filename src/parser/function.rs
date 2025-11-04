@@ -1,6 +1,6 @@
 use super::statement::Statement;
 use super::{ParseError, Parser};
-use crate::token::{Keyword, Token};
+use crate::token::{Keyword, TokenKind};
 
 pub enum Function {
     Function { name: String, body: Statement },
@@ -8,20 +8,21 @@ pub enum Function {
 
 impl Function {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
-        parser.expect(Token::Keyword(Keyword::Int))?;
+        parser.expect(TokenKind::Keyword(Keyword::Int))?;
 
-        let identifier = match parser.next()? {
-            Token::Identifier(i) => i,
-            token => return Err(ParseError::UnexpectedToken(token)),
+        let token = parser.next()?;
+        let identifier = match token.kind {
+            TokenKind::Identifier(i) => i,
+            _ => return Err(ParseError::UnexpectedToken(token)),
         };
 
-        parser.expect(Token::OpenParenthesis)?;
-        parser.expect(Token::Keyword(Keyword::Void))?;
-        parser.expect(Token::CloseParenthesis)?;
+        parser.expect(TokenKind::OpenParenthesis)?;
+        parser.expect(TokenKind::Keyword(Keyword::Void))?;
+        parser.expect(TokenKind::CloseParenthesis)?;
 
-        parser.expect(Token::OpenBrace)?;
+        parser.expect(TokenKind::OpenBrace)?;
         let statement = Statement::parse(parser)?;
-        parser.expect(Token::CloseBrace)?;
+        parser.expect(TokenKind::CloseBrace)?;
 
         Ok(Self::Function {
             name: identifier,

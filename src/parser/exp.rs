@@ -1,5 +1,5 @@
 use super::{ParseError, Parser};
-use crate::token::{Const, Token};
+use crate::token::{Const, TokenKind};
 
 pub enum Exp {
     ConstantInt(i64),
@@ -9,9 +9,9 @@ impl Exp {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
         let token = parser.next()?;
 
-        match token {
-            Token::Constant(Const::Int(num)) => Ok(Self::ConstantInt(num)),
-            other => Err(ParseError::UnexpectedToken(other)),
+        match token.kind {
+            TokenKind::Constant(Const::Int(num)) => Ok(Self::ConstantInt(num)),
+            _ => Err(ParseError::UnexpectedToken(token)),
         }
     }
 }

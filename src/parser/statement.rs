@@ -1,6 +1,6 @@
 use super::exp::Exp;
 use super::{ParseError, Parser};
-use crate::token::{Keyword, Token};
+use crate::token::{Keyword, TokenKind};
 
 pub enum Statement {
     Return(Exp),
@@ -8,9 +8,9 @@ pub enum Statement {
 
 impl Statement {
     pub fn parse<'a>(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
-        parser.expect(Token::Keyword(Keyword::Return))?;
+        parser.expect(TokenKind::Keyword(Keyword::Return))?;
         let exp = Exp::parse(parser)?;
-        parser.expect(Token::Semicolon)?;
+        parser.expect(TokenKind::Semicolon)?;
 
         Ok(Self::Return(exp))
     }
@@ -19,7 +19,7 @@ impl Statement {
 #[cfg(test)]
 mod tests {
     use crate::lexer::Lexer;
-    use crate::token::Const;
+    use crate::token::{Const, Token, TokenKind};
 
     use super::*;
 
@@ -39,8 +39,13 @@ mod tests {
         let mut parser = Parser::new(lexer);
         assert!(matches!(
             Statement::parse(&mut parser),
-            Err(ParseError::UnexpectedToken(Token::Constant(Const::Int(2))))
-        ));
+            Err(ParseError::UnexpectedToken(
+                Token {
+                    kind,
+                    span: _
+                }
+            ))
+            if kind == TokenKind::Constant(Const::Int(2))));
     }
 
     #[test]

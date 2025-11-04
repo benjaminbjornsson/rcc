@@ -17,9 +17,10 @@ impl Program {
 mod tests {
     use super::*;
     use crate::lexer::Lexer;
-    use crate::token::Token;
+    use crate::token::{Token, TokenKind};
     use crate::parser::exp::Exp;
     use crate::parser::statement::Statement;
+    use crate::span::Span;
 
     #[test]
     fn return_int() {
@@ -46,7 +47,8 @@ mod tests {
         let mut parser = Parser::new(lexer);
         assert!(matches!(
             Program::parse(&mut parser),
-            Err(ParseError::UnexpectedToken(Token::CloseBrace))
+            Err(ParseError::UnexpectedToken(Token { kind, span: _ }))
+            if kind == TokenKind::CloseBrace
         ));
     }
 }

@@ -1,3 +1,5 @@
+use crate::span::Span;
+
 #[derive(Debug, PartialEq)]
 pub enum Keyword {
     Int,
@@ -11,7 +13,7 @@ pub enum Const {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Token {
+pub enum TokenKind {
     Identifier(String),
     Constant(Const),
     Keyword(Keyword),
@@ -20,4 +22,10 @@ pub enum Token {
     OpenBrace,
     CloseBrace,
     Semicolon,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Token {
+    pub kind: TokenKind,
+    pub span: Span,
 }
