@@ -53,9 +53,9 @@ impl From<std::io::Error> for CompilerError {
     }
 }
 
-pub fn render_diagnostic(src: &str, error: &LexerError) {
-    let start = error.span.start.min(src.len());
-    let end = error.span.end.min(src.len());
+pub fn render_diagnostic(src: &str, span: &Span, msg: &str) {
+    let start = span.start.min(src.len());
+    let end = span.end.min(src.len());
 
     let line_start = src[..start].rfind('\n').map(|i| i + 1).unwrap_or(0);
     let line_end = src[end..]
@@ -92,7 +92,7 @@ pub fn render_diagnostic(src: &str, error: &LexerError) {
         "{}{} {}",
         " ".repeat(underline_pad),
         "^".repeat(underline_len),
-        &error.to_string()
+        &msg
     );
 
     eprint!("{}", out);

@@ -73,7 +73,7 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
     if args.lex {
         let mut lexer = Lexer::new(&pre_str);
         if let Some(error) = lexer.find_map(|res| res.err()) {
-            error::render_diagnostic(&pre_str, &error);
+            error::render_diagnostic(&pre_str, &error.span, &error.to_string());
             return Err(CompilerError::Lexer);
         }
 
@@ -87,7 +87,7 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
 
         if let Err(error) = parser.parse() {
             if let ParseError::Lexer (error) = error {
-                error::render_diagnostic(&pre_str, &error);
+                error::render_diagnostic(&pre_str, &error.span, &error.to_string());
             }
             return Err(CompilerError::Parser)
         }
