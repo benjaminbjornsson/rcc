@@ -7,10 +7,7 @@ pub enum Exp {
 
 impl Exp {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
-        let token = parser
-            .next()
-            .transpose()?
-            .ok_or(ParseError::UnexpectedEof)?;
+        let token = parser.next()?;
 
         match token {
             Token::Constant(Const::Int(num)) => Ok(Self::ConstantInt(num)),

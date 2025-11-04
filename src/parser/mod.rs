@@ -38,10 +38,9 @@ impl<'a> Parser<'a> {
     }
 
     fn expect(&mut self, expected: Token) -> Result<(), ParseError> {
-        match self.lexer.next().transpose()? {
-            Some(t) if t == expected => Ok(()),
-            Some(t) => Err(ParseError::UnexpectedToken(t)),
-            None => return Err(ParseError::UnexpectedEof),
+        match self.next()? {
+            token if token == expected => Ok(()),
+            token => Err(ParseError::UnexpectedToken(token)),
         }
     }
 
@@ -52,8 +51,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn next(&mut self) -> Option<Result<Token, LexerError>> {
-        self.lexer.next()
+    fn next(&mut self) -> Result<Token, ParseError> {
+        match self.lexer.next() {
+            None => Err(ParseError::UnexpectedEof),
+            Some(Ok(t)) => Ok(t),
+            Some(Err(e)) => Err(ParseError::Lexer(self.lexer.render_diagnostic(e))),
+        }
     }
 }
 

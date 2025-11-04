@@ -9,10 +9,10 @@ pub enum Function {
 impl Function {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
         parser.expect(Token::Keyword(Keyword::Int))?;
-        let identifier = match parser.next().transpose()? {
-            None => return Err(ParseError::UnexpectedEof),
-            Some(Token::Identifier(i)) => i,
-            Some(t) => return Err(ParseError::UnexpectedToken(t)),
+
+        let identifier = match parser.next()? {
+            Token::Identifier(i) => i,
+            token => return Err(ParseError::UnexpectedToken(token)),
         };
 
         parser.expect(Token::OpenParenthesis)?;
