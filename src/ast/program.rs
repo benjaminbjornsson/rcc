@@ -1,9 +1,6 @@
-use super::function::Function;
-use super::{ParseError, Parser};
-
-pub enum Program {
-    FunctionDefinition(Function),
-}
+use crate::ast::{Function, Program};
+use crate::error::ParseError;
+use crate::parser::Parser;
 
 impl Program {
     pub fn parse<'a>(parser: &mut Parser<'a>) -> Result<Self, ParseError> {
@@ -18,8 +15,7 @@ mod tests {
     use super::*;
     use crate::lexer::Lexer;
     use crate::token::{Token, TokenKind};
-    use crate::parser::exp::Exp;
-    use crate::parser::statement::Statement;
+    use crate::ast::{Exp, Statement};
 
     #[test]
     fn return_int() {

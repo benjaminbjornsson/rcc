@@ -1,10 +1,7 @@
-use super::statement::Statement;
-use super::{ParseError, Parser};
+use crate::ast::{Function, Statement};
+use crate::error::ParseError;
+use crate::parser::Parser;
 use crate::token::{Keyword, TokenKind};
-
-pub enum Function {
-    Function { name: String, body: Statement },
-}
 
 impl Function {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
@@ -35,7 +32,7 @@ impl Function {
 mod tests {
     use super::*;
     use crate::lexer::Lexer;
-    use crate::parser::exp::Exp;
+    use crate::ast::Exp;
 
     #[test]
     fn parse_return() {

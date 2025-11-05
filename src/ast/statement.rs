@@ -1,10 +1,7 @@
-use super::exp::Exp;
-use super::{ParseError, Parser};
+use crate::ast::{Exp, Statement};
+use crate::error::ParseError;
+use crate::parser::Parser;
 use crate::token::{Keyword, TokenKind};
-
-pub enum Statement {
-    Return(Exp),
-}
 
 impl Statement {
     pub fn parse<'a>(parser: &mut Parser<'a>) -> Result<Self, ParseError> {

@@ -1,13 +1,8 @@
-pub mod exp;
-pub mod function;
-pub mod program;
-pub mod statement;
-
 use crate::lexer::Lexer;
 use crate::span::Span;
 use crate::token::{Token, TokenKind};
-use crate::parser::program::Program;
 use crate::error::ParseError;
+use crate::ast::Program;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
@@ -26,21 +21,21 @@ impl<'a> Parser<'a> {
         Ok(program)
     }
 
-    fn expect(&mut self, expected: TokenKind) -> Result<(), ParseError> {
+    pub fn expect(&mut self, expected: TokenKind) -> Result<(), ParseError> {
         match self.next()? {
             token if token.kind == expected => Ok(()),
             token => Err(ParseError::UnexpectedToken(token, expected)),
         }
     }
 
-    fn expect_eof(&mut self) -> Result<(), ParseError> {
+    pub fn expect_eof(&mut self) -> Result<(), ParseError> {
         match self.lexer.next().transpose()? {
             None => Ok(()),
             Some(t) => Err(ParseError::UnexpectedTrailing(t)),
         }
     }
 
-    fn next(&mut self) -> Result<Token, ParseError> {
+    pub fn next(&mut self) -> Result<Token, ParseError> {
         match self.lexer.next() {
             None => Err(ParseError::UnexpectedEof(Span::single(self.lexer.pos()))),
             Some(Ok(t)) => Ok(t),

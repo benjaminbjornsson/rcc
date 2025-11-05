@@ -10,6 +10,7 @@ mod parser;
 pub mod span;
 pub mod error;
 use error::CompilerError;
+mod ast;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]

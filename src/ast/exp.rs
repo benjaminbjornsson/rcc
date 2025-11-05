@@ -1,9 +1,7 @@
-use super::{ParseError, Parser};
+use crate::ast::Exp;
+use crate::error::ParseError;
+use crate::parser::Parser;
 use crate::token::{Const, TokenKind};
-
-pub enum Exp {
-    ConstantInt(i64),
-}
 
 impl Exp {
     pub fn parse(parser: &mut Parser) -> Result<Self, ParseError> {
