@@ -1,6 +1,6 @@
-use crate::token::{Const, Keyword, Token, TokenKind};
-use crate::span::Span;
 use crate::error::{LexerError, LexerErrorKind};
+use crate::span::Span;
+use crate::token::{Const, Keyword, Token, TokenKind};
 
 pub struct Lexer<'a> {
     src: &'a str,

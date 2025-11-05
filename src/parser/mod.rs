@@ -1,9 +1,8 @@
 use crate::ast::{Exp, Function, Program, Statement};
+use crate::error::ParseError;
 use crate::lexer::Lexer;
 use crate::span::Span;
 use crate::token::{Const, Keyword, Token, TokenKind};
-use crate::error::ParseError;
-use crate::ast::Program;
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,

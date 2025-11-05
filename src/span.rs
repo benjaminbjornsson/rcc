@@ -17,6 +17,6 @@ impl Span {
     }
 }
 
-pub trait HasSpan { 
+pub trait HasSpan {
     fn span(&self) -> &Span;
 }

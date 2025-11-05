@@ -3,12 +3,12 @@ use std::io::Error;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 use std::process::Command;
-mod token;
 mod lexer;
+mod token;
 use lexer::Lexer;
+pub mod error;
 mod parser;
 pub mod span;
-pub mod error;
 use error::CompilerError;
 mod ast;
 
@@ -81,14 +81,13 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
         return Ok(());
     }
 
-
     if args.parse {
         let lexer = Lexer::new(&pre_str);
         let mut parser = parser::Parser::new(lexer);
 
         if let Err(error) = parser.parse() {
             error::render_diagnostic(&pre_str, &error);
-            return Err(CompilerError::Parser)
+            return Err(CompilerError::Parser);
         }
 
         return Ok(());

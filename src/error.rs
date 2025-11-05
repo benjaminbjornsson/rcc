@@ -1,6 +1,6 @@
-use std::fmt;
 use crate::span::{HasSpan, Span};
 use crate::token::{Token, TokenKind};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum LexerErrorKind {
@@ -55,7 +55,9 @@ impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self {
             ParseError::UnexpectedEof(_) => write!(f, "unexpected end of file"),
-            ParseError::UnexpectedToken(token, expected) => write!(f, "expected '{:?}' but found {:?}", expected, token.kind),
+            ParseError::UnexpectedToken(token, expected) => {
+                write!(f, "expected '{:?}' but found {:?}", expected, token.kind)
+            }
             ParseError::UnexpectedTrailing(token) => write!(f, "unexpected trailing '{:?}'", token),
             ParseError::Lexer(error) => write!(f, "{}", error.to_string()),
         }
@@ -86,17 +88,11 @@ pub fn render_diagnostic(src: &str, error: &(impl HasSpan + std::fmt::Display)) 
     let end = error.span().end.min(src.len());
 
     let line_start = src[..start].rfind('\n').map(|i| i + 1).unwrap_or(0);
-    let line_end = src[end..]
-        .find('\n')
-        .map(|i| end + i)
-        .unwrap_or(src.len());
+    let line_end = src[end..].find('\n').map(|i| end + i).unwrap_or(src.len());
 
     let line_text = &src[line_start..line_end];
 
-    let line_no = 1 + src[..line_start]
-        .chars()
-        .filter(|&c| c == '\n')
-        .count();
+    let line_no = 1 + src[..line_start].chars().filter(|&c| c == '\n').count();
 
     let col_start = src[line_start..start].chars().count().max(1);
 
