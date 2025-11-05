@@ -17,21 +17,21 @@ impl<'a> Parser<'a> {
         self.parse_program()
     }
 
-    pub fn expect(&mut self, expected: TokenKind) -> Result<(), ParseError> {
+    fn expect(&mut self, expected: TokenKind) -> Result<(), ParseError> {
         match self.next()? {
             token if token.kind == expected => Ok(()),
             token => Err(ParseError::UnexpectedToken(token, expected)),
         }
     }
 
-    pub fn expect_eof(&mut self) -> Result<(), ParseError> {
+    fn expect_eof(&mut self) -> Result<(), ParseError> {
         match self.lexer.next().transpose()? {
             None => Ok(()),
             Some(t) => Err(ParseError::UnexpectedTrailing(t)),
         }
     }
 
-    pub fn next(&mut self) -> Result<Token, ParseError> {
+    fn next(&mut self) -> Result<Token, ParseError> {
         match self.lexer.next() {
             None => Err(ParseError::UnexpectedEof(Span::single(self.lexer.pos()))),
             Some(Ok(t)) => Ok(t),
@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn parse_program(&mut self) -> Result<Program, ParseError> {
+    fn parse_program(&mut self) -> Result<Program, ParseError> {
         let function_definition = self.parse_function()?;
 
         self.expect_eof()?;
@@ -49,7 +49,7 @@ impl<'a> Parser<'a> {
         Ok(Program::FunctionDefinition(function_definition))
     }
 
-    pub fn parse_function(&mut self) -> Result<Function, ParseError> {
+    fn parse_function(&mut self) -> Result<Function, ParseError> {
         self.expect(TokenKind::Keyword(Keyword::Int))?;
 
         let token = self.next()?;
