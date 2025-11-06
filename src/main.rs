@@ -33,6 +33,10 @@ struct Args {
     #[allow(non_snake_case)]
     s: bool,
 
+    /// Print the AST with pretty-print.
+    #[arg(long)]
+    pretty_print: bool,
+
     /// Path to the file to compile.
     file_path: String,
 }
@@ -91,6 +95,13 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
         }
 
         return Ok(());
+    }
+
+    let lexer = Lexer::new(&pre_str);
+    let mut parser = parser::Parser::new(lexer);
+    let ast = parser.parse()?;
+    if args.pretty_print {
+        println!("{}", ast);
     }
 
     Ok(())
