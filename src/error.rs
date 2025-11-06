@@ -83,6 +83,12 @@ impl From<std::io::Error> for CompilerError {
     }
 }
 
+impl From<ParseError> for CompilerError {
+    fn from(_: ParseError) -> Self {
+        CompilerError::Parser
+    }
+}
+
 pub fn render_diagnostic(src: &str, error: &(impl HasSpan + std::fmt::Display)) {
     let start = error.span().start.min(src.len());
     let end = error.span().end.min(src.len());
