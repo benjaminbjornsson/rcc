@@ -1,4 +1,5 @@
-use crate::ast::{pretty::*, Statement};
+use crate::ast::Statement;
+use crate::pretty::{self, Pretty};
 use std::fmt;
 
 impl fmt::Display for Statement {
@@ -12,9 +13,9 @@ impl Pretty for Statement {
         match self {
             Self::Return(exp) => {
                 writeln!(f, "Return(")?;
-                indent(f, depth + 1)?;
+                pretty::indent(f, depth + 1)?;
                 exp.fmt_with(f, depth + 1)?;
-                indent(f, depth)?;
+                pretty::indent(f, depth)?;
                 writeln!(f, ")")
             }
         }

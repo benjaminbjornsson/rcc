@@ -11,6 +11,7 @@ mod parser;
 pub mod span;
 use error::CompilerError;
 mod ast;
+mod pretty;
 
 /// Rust C Compiler
 #[derive(Parser, Debug)]

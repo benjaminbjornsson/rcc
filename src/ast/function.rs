@@ -1,4 +1,5 @@
-use crate::ast::{pretty::*, Function};
+use crate::ast::Function;
+use crate::pretty::{self, Pretty};
 use std::fmt;
 
 impl fmt::Display for Function {
@@ -12,12 +13,12 @@ impl Pretty for Function {
         match self {
             Self::Function { name, body } => {
                 writeln!(f, "Function(")?;
-                indent(f, depth + 1)?;
+                pretty::indent(f, depth + 1)?;
                 writeln!(f, "name={},", name)?;
-                indent(f, depth + 1)?;
+                pretty::indent(f, depth + 1)?;
                 write!(f, "body=")?;
                 body.fmt_with(f, depth + 1)?;
-                indent(f, depth)?;
+                pretty::indent(f, depth)?;
                 writeln!(f, ")")
             }
         }

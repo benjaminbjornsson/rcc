@@ -1,4 +1,5 @@
-use crate::ast::{self, pretty::*, Exp};
+use crate::ast::{self, Exp};
+use crate::pretty::Pretty;
 use std::fmt;
 
 impl fmt::Display for Exp {

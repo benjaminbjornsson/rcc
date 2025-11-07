@@ -1,6 +1,5 @@
 pub mod exp;
 pub mod function;
-pub mod pretty;
 pub mod program;
 pub mod statement;
 

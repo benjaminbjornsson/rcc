@@ -1,4 +1,5 @@
-use crate::ast::{pretty::*, Program};
+use crate::ast::Program;
+use crate::pretty::{self, Pretty};
 use std::fmt;
 
 impl fmt::Display for Program {
@@ -12,9 +13,9 @@ impl Pretty for Program {
         match self {
             Self::FunctionDefinition(func) => {
                 writeln!(f, "Program(")?;
-                indent(f, depth + 1)?;
+                pretty::indent(f, depth + 1)?;
                 func.fmt_with(f, depth + 1)?;
-                indent(f, depth)?;
+                pretty::indent(f, depth)?;
                 writeln!(f, ")")
             }
         }
