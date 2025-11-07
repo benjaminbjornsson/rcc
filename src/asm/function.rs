@@ -4,7 +4,10 @@ use std::fmt;
 
 fn prolog(_f: &mut fmt::Formatter<'_>) -> fmt::Result {
     #[cfg(target_os = "linux")]
-    writeln!(_f, ".section .note.GNU-stack,"",@progbits")?;
+    {
+        writeln!(_f)?;
+        writeln!(_f, r#".section .note.GNU-stack,"",@progbits"#)?;
+    }
 
     Ok(())
 }
