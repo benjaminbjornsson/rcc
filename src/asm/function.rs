@@ -11,7 +11,7 @@ fn prolog(_f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
 fn function_name(name: &str) -> String {
     if cfg!(target_os = "macos") {
-        return format!("_{}", name)
+        return format!("_{}", name);
     } else {
         name.to_string()
     }
@@ -34,7 +34,7 @@ impl Pretty for Function {
                 for instr in instructions.0.iter() {
                     instr.fmt_with(f, 1)?;
                 }
-            },
+            }
         }
 
         prolog(f)

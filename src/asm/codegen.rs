@@ -4,9 +4,7 @@ use crate::ast;
 impl From<ast::Program> for Program {
     fn from(prog: ast::Program) -> Self {
         match prog {
-            ast::Program::FunctionDefinition(func) => {
-                Self::Program(Function::from(func))
-            }
+            ast::Program::FunctionDefinition(func) => Self::Program(Function::from(func)),
         }
     }
 }
@@ -28,11 +26,14 @@ impl From<ast::Statement> for InstrSeq {
         match func {
             ast::Statement::Return(exp) => {
                 let mut instructions: Vec<Instr> = Vec::<Instr>::new();
-                instructions.push(Instr::Mov { src: Operand::Register, dst: Operand::from(exp) });
+                instructions.push(Instr::Mov {
+                    src: Operand::Register,
+                    dst: Operand::from(exp),
+                });
                 instructions.push(Instr::Ret);
 
-                Self ( instructions )
-            },
+                Self(instructions)
+            }
         }
     }
 }

@@ -96,11 +96,11 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
                 if args.pretty_print {
                     println!("{}", ast);
                 }
-            },
+            }
             Err(error) => {
                 error::render_diagnostic(&pre_str, &error);
                 return Err(CompilerError::Parser);
-            },
+            }
         }
 
         return Ok(());

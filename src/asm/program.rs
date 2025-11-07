@@ -11,9 +11,7 @@ impl fmt::Display for Program {
 impl Pretty for Program {
     fn fmt_with(&self, f: &mut fmt::Formatter<'_>, _: usize) -> fmt::Result {
         match self {
-            Program::Program(func) => {
-                func.fmt_with(f, 0)
-            },
+            Program::Program(func) => func.fmt_with(f, 0),
         }
     }
 }
