@@ -10,6 +10,7 @@ pub mod error;
 mod parser;
 pub mod span;
 use error::CompilerError;
+mod asm;
 mod ast;
 mod pretty;
 
@@ -108,6 +109,7 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
     let lexer = Lexer::new(&pre_str);
     let mut parser = parser::Parser::new(lexer);
     let ast = parser.parse()?;
+    let asm = asm::Program::from(ast);
 
     Ok(())
 }
