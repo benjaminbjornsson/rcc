@@ -90,9 +90,16 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
         let lexer = Lexer::new(&pre_str);
         let mut parser = parser::Parser::new(lexer);
 
-        if let Err(error) = parser.parse() {
-            error::render_diagnostic(&pre_str, &error);
-            return Err(CompilerError::Parser);
+        match parser.parse() {
+            Ok(ast) => {
+                if args.pretty_print {
+                    println!("{}", ast);
+                }
+            },
+            Err(error) => {
+                error::render_diagnostic(&pre_str, &error);
+                return Err(CompilerError::Parser);
+            },
         }
 
         return Ok(());
@@ -101,9 +108,6 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
     let lexer = Lexer::new(&pre_str);
     let mut parser = parser::Parser::new(lexer);
     let ast = parser.parse()?;
-    if args.pretty_print {
-        println!("{}", ast);
-    }
 
     Ok(())
 }
