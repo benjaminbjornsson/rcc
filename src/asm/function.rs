@@ -2,16 +2,6 @@ use crate::asm::Function;
 use crate::pretty::Pretty;
 use std::fmt;
 
-fn prolog(_f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    #[cfg(target_os = "linux")]
-    {
-        writeln!(_f)?;
-        writeln!(_f, r#".section .note.GNU-stack,"",@progbits"#)?;
-    }
-
-    Ok(())
-}
-
 fn function_name(name: &str) -> String {
     if cfg!(target_os = "macos") {
         return format!("_{}", name);
@@ -37,9 +27,9 @@ impl Pretty for Function {
                 for instr in instructions.0.iter() {
                     instr.fmt_with(f, 1)?;
                 }
+
+                Ok(())
             }
         }
-
-        prolog(f)
     }
 }
