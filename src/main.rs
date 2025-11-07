@@ -73,7 +73,7 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
     ))
 }
 
-fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerError> {
+fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerError> {
     let pre_str: String = std::fs::read_to_string(&pre)?;
     std::fs::remove_file(pre)?;
 
@@ -111,12 +111,22 @@ fn run_compiler(args: &Args, pre: &str, _assembly: &str) -> Result<(), CompilerE
     let ast = parser.parse()?;
     let asm = asm::Program::from(ast);
 
+    if args.codegen {
+        if args.pretty_print {
+            println!("{}", asm);
+        }
+
+        return Ok(());
+    }
+
+    std::fs::write(assembly, asm.to_string())?;
+
     Ok(())
 }
 
 fn run(args: Args) -> Result<(), CompilerError> {
     let input = &args.file_path;
-    let pre = with_extension(input, "i");
+    let pre: String = with_extension(input, "i");
     run_cmd("gcc", &["-E", "-P", input, "-o", &pre])?;
 
     let assembly = with_extension(input, "s");
