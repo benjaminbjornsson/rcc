@@ -73,22 +73,19 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
     ))
 }
 
-fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerError> {
-    let pre_str: String = std::fs::read_to_string(&pre)?;
-    std::fs::remove_file(pre)?;
-
+fn run_compiler(args: &Args, pre: &str) -> Result<Option<String>, CompilerError> {
     if args.lex {
-        let mut lexer = Lexer::new(&pre_str);
+        let mut lexer = Lexer::new(&pre);
         if let Some(error) = lexer.find_map(|res| res.err()) {
-            error::render_diagnostic(&pre_str, &error);
+            error::render_diagnostic(&pre, &error);
             return Err(CompilerError::Lexer);
         }
 
-        return Ok(());
+        return Ok(None);
     }
 
     if args.parse {
-        let lexer = Lexer::new(&pre_str);
+        let lexer = Lexer::new(&pre);
         let mut parser = parser::Parser::new(lexer);
 
         match parser.parse() {
@@ -98,15 +95,15 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
                 }
             }
             Err(error) => {
-                error::render_diagnostic(&pre_str, &error);
+                error::render_diagnostic(&pre, &error);
                 return Err(CompilerError::Parser);
             }
         }
 
-        return Ok(());
+        return Ok(None);
     }
 
-    let lexer = Lexer::new(&pre_str);
+    let lexer = Lexer::new(&pre);
     let mut parser = parser::Parser::new(lexer);
     let ast = parser.parse()?;
     let asm = asm::Program::from(ast);
@@ -116,12 +113,10 @@ fn run_compiler(args: &Args, pre: &str, assembly: &str) -> Result<(), CompilerEr
             println!("{}", asm);
         }
 
-        return Ok(());
+        return Ok(None);
     }
 
-    std::fs::write(assembly, asm.to_string())?;
-
-    Ok(())
+    Ok(Some(asm.to_string()))
 }
 
 fn run(args: Args) -> Result<(), CompilerError> {
@@ -129,8 +124,12 @@ fn run(args: Args) -> Result<(), CompilerError> {
     let pre: String = with_extension(input, "i");
     run_cmd("gcc", &["-E", "-P", input, "-o", &pre])?;
 
+    let pre_str: String = std::fs::read_to_string(&pre)?;
+    std::fs::remove_file(pre)?;
     let assembly = with_extension(input, "s");
-    run_compiler(&args, &pre, &assembly)?;
+    if let Some(res) = run_compiler(&args, &pre_str)? {
+        std::fs::write(&assembly, res)?;
+    }
 
     if args.lex || args.parse || args.codegen {
         return Ok(());
@@ -143,7 +142,7 @@ fn run(args: Args) -> Result<(), CompilerError> {
     let output = with_extension(input, "");
     run_cmd("gcc", &[&assembly, "-o", &output])?;
 
-    std::fs::remove_file(assembly)?;
+    std::fs::remove_file(&assembly)?;
 
     Ok(())
 }
