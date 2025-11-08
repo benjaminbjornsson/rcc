@@ -69,9 +69,9 @@ impl fmt::Display for ParseError {
         match &self {
             ParseError::UnexpectedEof(_) => write!(f, "unexpected end of file"),
             ParseError::UnexpectedToken(token, expected) => {
-                write!(f, "expected '{:?}' but found {:?}", expected, token.kind)
+                write!(f, "expected '{}' but found '{}'", expected, token.kind)
             }
-            ParseError::UnexpectedTrailing(token) => write!(f, "unexpected trailing '{:?}'", token),
+            ParseError::UnexpectedTrailing(token) => write!(f, "unexpected trailing '{}'", token.kind),
             ParseError::Lexer(error) => write!(f, "{}", error.to_string()),
         }
     }
