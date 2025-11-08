@@ -10,7 +10,7 @@ jobs:
 
     env:
       TEST_SCRIPT: writing-a-c-compiler-tests/test_compiler
-      TEST_SCRIPT_ARGS: --chapter 1
+      TEST_SCRIPT_ARGS: --chapter 2 --stage lex
       COMPILER_DRIVER: target/debug/rcc
 
     steps:
