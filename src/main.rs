@@ -9,7 +9,9 @@ use lexer::Lexer;
 pub mod error;
 mod parser;
 pub mod span;
-use error::CompilerError;
+use crate::error::CompilerError;
+use crate::error::LexerError;
+use error::AppError;
 mod asm;
 mod ast;
 mod pretty;
@@ -43,7 +45,7 @@ struct Args {
     file_path: String,
 }
 
-fn main() -> Result<(), CompilerError> {
+fn main() -> Result<(), AppError> {
     run(Args::parse())
 }
 
@@ -75,11 +77,8 @@ fn run_cmd(cmd: &str, args: &[&str]) -> Result<(), std::io::Error> {
 
 fn run_compiler(args: &Args, pre: &str) -> Result<Option<String>, CompilerError> {
     if args.lex {
-        let mut lexer = Lexer::new(&pre);
-        if let Some(error) = lexer.find_map(|res| res.err()) {
-            error::render_diagnostic(&pre, &error);
-            return Err(CompilerError::Lexer);
-        }
+        let lexer = Lexer::new(&pre);
+        lexer.collect::<Result<Vec<_>, LexerError>>()?;
 
         return Ok(None);
     }
@@ -88,16 +87,10 @@ fn run_compiler(args: &Args, pre: &str) -> Result<Option<String>, CompilerError>
         let lexer = Lexer::new(&pre);
         let mut parser = parser::Parser::new(lexer);
 
-        match parser.parse() {
-            Ok(ast) => {
-                if args.pretty_print {
-                    println!("{}", ast);
-                }
-            }
-            Err(error) => {
-                error::render_diagnostic(&pre, &error);
-                return Err(CompilerError::Parser);
-            }
+        let ast = parser.parse()?;
+
+        if args.pretty_print {
+            println!("{}", ast);
         }
 
         return Ok(None);
@@ -119,7 +112,7 @@ fn run_compiler(args: &Args, pre: &str) -> Result<Option<String>, CompilerError>
     Ok(Some(asm.to_string()))
 }
 
-fn run(args: Args) -> Result<(), CompilerError> {
+fn run(args: Args) -> Result<(), AppError> {
     let input = &args.file_path;
     let pre: String = with_extension(input, "i");
     run_cmd("gcc", &["-E", "-P", input, "-o", &pre])?;
@@ -127,8 +120,17 @@ fn run(args: Args) -> Result<(), CompilerError> {
     let pre_str: String = std::fs::read_to_string(&pre)?;
     std::fs::remove_file(pre)?;
     let assembly = with_extension(input, "s");
-    if let Some(res) = run_compiler(&args, &pre_str)? {
-        std::fs::write(&assembly, res)?;
+    match run_compiler(&args, &pre_str) {
+        Ok(Some(res)) => std::fs::write(&assembly, &res)?,
+        Err(CompilerError::Lexer(err)) => {
+            error::render_diagnostic(&pre_str, &err);
+            return Err(AppError::Compiler);
+        }
+        Err(CompilerError::Parser(err)) => {
+            error::render_diagnostic(&pre_str, &err);
+            return Err(AppError::Compiler);
+        }
+        _ => (),
     }
 
     if args.lex || args.parse || args.codegen {

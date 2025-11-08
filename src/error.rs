@@ -10,6 +10,18 @@ pub enum LexerErrorKind {
 }
 
 #[derive(Debug)]
+pub enum AppError {
+    Compiler,
+    Io(std::io::Error),
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(err: std::io::Error) -> Self {
+        AppError::Io(err)
+    }
+}
+
+#[derive(Debug)]
 pub struct LexerError {
     pub kind: LexerErrorKind,
     pub span: Span,
@@ -33,6 +45,7 @@ impl fmt::Display for LexerError {
     }
 }
 
+#[derive(Debug)]
 pub enum ParseError {
     UnexpectedEof(Span),
     UnexpectedToken(Token, TokenKind),
@@ -72,20 +85,19 @@ impl From<LexerError> for ParseError {
 
 #[derive(Debug)]
 pub enum CompilerError {
-    Io(std::io::Error),
-    Lexer,
-    Parser,
+    Lexer(LexerError),
+    Parser(ParseError),
 }
 
-impl From<std::io::Error> for CompilerError {
-    fn from(e: std::io::Error) -> Self {
-        CompilerError::Io(e)
+impl From<LexerError> for CompilerError {
+    fn from(err: LexerError) -> Self {
+        CompilerError::Lexer(err)
     }
 }
 
 impl From<ParseError> for CompilerError {
-    fn from(_: ParseError) -> Self {
-        CompilerError::Parser
+    fn from(err: ParseError) -> Self {
+        CompilerError::Parser(err)
     }
 }
 
