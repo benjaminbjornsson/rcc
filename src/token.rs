@@ -24,6 +24,9 @@ pub enum TokenKind {
     OpenBrace,
     CloseBrace,
     Semicolon,
+    Complement,
+    Negation,
+    Decrement,
 }
 
 #[derive(Debug, PartialEq)]
@@ -61,6 +64,9 @@ impl fmt::Display for TokenKind {
             Self::OpenBrace => write!(f, "{{"),
             Self::CloseBrace => write!(f, "}}"),
             Self::Semicolon => write!(f, ";"),
+            Self::Complement => write!(f, "~"),
+            Self::Negation => write!(f, "-"),
+            Self::Decrement => write!(f, "--"),
         }
     }
 }

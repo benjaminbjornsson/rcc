@@ -186,6 +186,34 @@ impl<'a> Iterator for Lexer<'a> {
                     },
                 }))
             }
+            Some((i, '~')) => {
+                self.consume_char();
+                Some(Ok(Token {
+                    kind: TokenKind::Complement,
+                    span: Span {
+                        start: i,
+                        end: i + 1,
+                    },
+                }))
+            }
+            Some((i, '-')) => {
+                self.consume_char();
+                let (token_kind, end) = match self.peek_char() {
+                    Some((_, '-')) => {
+                        self.consume_char();
+                        (TokenKind::Complement, i + 1)
+                    },
+                    _ => (TokenKind::Negation, i),
+                };
+
+                Some(Ok(Token {
+                    kind: token_kind,
+                    span: Span {
+                        start: i,
+                        end: end + 1,
+                    },
+                }))
+            }
             Some((i, c)) => Some(Err(LexerError {
                 kind: LexerErrorKind::UnexpectedCharacter(c),
                 span: Span::single(i),
